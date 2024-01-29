@@ -31,6 +31,16 @@ This repository provides a Dockerized solution for collecting Maven logs using F
 
 ### Fluentd Configuration (`fluent.conf`)
 
+Components of fluentd file
+
+Created a custom parse to formate the JAVA logs.
+```
+<parse>
+   @type regexp
+   expression (?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})\s+(?<logLevel>[A-Z]+)\s+(?<pid>\d+)\s+---\s+\[\s*(?<thread>\S+)\s*\]\s+(?<logger>\S+)\s+:\s+(?<message>.*)
+</parse>
+```
+
 ```conf
 <source>
   @type tail
@@ -47,7 +57,7 @@ This repository provides a Dockerized solution for collecting Maven logs using F
 
 <match **>
   @type newrelic
-  license_key #paste api key of new relic
+  license_key #paste api key of newrelic
   base_url https://log-api.newrelic.com/log/v1
   <buffer>
     @type memory
