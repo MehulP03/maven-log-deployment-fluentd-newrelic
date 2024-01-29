@@ -1,0 +1,62 @@
+# Name of workflow as seen in Github actions tab
+name: dev-build-and-deploy
+# Run workflow only on push to dev branch
+on: 
+  workflow_dispatch:
+    inputs: 
+      bucket_name:
+        required: true
+        type: string
+
+      jar_file_name:
+        required: true
+        type: string
+
+      
+         
+    # secrets:
+    #   AWS_ACCESS_KEY:
+    #     required: true
+
+    #   AWS_SECRET_ACCESS:
+    #     required: true
+
+    
+     
+jobs:
+  # To build the project
+  build-MyMaven:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out code
+        uses: actions/checkout@v3
+
+      - name: java version
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto' # See 'Supported distributions' for available options
+          java-version: '17'
+      
+        # Installing Maven 
+      - name: Installing dependencies for maven
+        uses: virtuecloud/Composite-actions/mvntest@java
+        
+#   
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS }}
+          aws-region: us-east-1
+      - name: Copy files to the production website with the AWS CLI
+        uses: virtuecloud/Composite-actions/s3bucketmvnaction@java
+        with:
+          bucket_name: ${{inputs.bucket_name}}
+          jar_file_name: ${{inputs.jar_file_name}}
+
+
+
+      - name: Executing commands on ec2
+        run: aws ssm send-command --document-name "AWS-RunRemoteScript" --targets "Key=InstanceIds,Values=[i-08f243aceca89255a]" --parameters '{"sourceType":["S3"],"sourceInfo":["{\"path\":\"https://mvnprojectbucket.s3.us-east-1.amazonaws.com/ec2runcom.sh\"}"],"commandLine":["./ec2runcom.sh"]}'
+
+
