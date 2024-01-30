@@ -24,7 +24,7 @@ This repository provides a Dockerized solution for collecting Maven logs using F
 3. Run the Docker container:
 
    ```bash
-   docker run -it maven-fluentd-newrelic
+   docker run -d -p 24224:24224 maven-fluentd-newrelic
    ```
 
 ## Configuration
